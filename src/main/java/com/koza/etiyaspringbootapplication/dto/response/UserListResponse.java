@@ -4,16 +4,15 @@ import com.koza.etiyaspringbootapplication.dto.UserDto;
 import lombok.*;
 import org.springframework.http.HttpStatus;
 
-import java.util.Date;
+import java.util.List;
 
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
 @Getter
 @Setter
-public class UserResponse {
-    private UserDto user;
-    private String message;
+public class UserListResponse {
+    private List<UserDto> userList;
     private HttpStatus httpStatus;
 }

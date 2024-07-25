@@ -25,7 +25,9 @@ public class User {
 
     @Column(length = 250)
     private String email;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateDate;
     private boolean isSystemUser;
 
