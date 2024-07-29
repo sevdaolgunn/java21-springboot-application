@@ -1,11 +1,16 @@
 package com.koza.etiyaspringbootapplication.controller;
 import com.koza.etiyaspringbootapplication.dto.request.CreateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
+import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
+import com.koza.etiyaspringbootapplication.entity.User;
 import com.koza.etiyaspringbootapplication.service.UserService;
+import jakarta.persistence.PostRemove;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +39,18 @@ public class UserController {
     }
 
     @DeleteMapping("/delete/{userId}")
-    public UserResponse deleteUser(@PathVariable Long userId){
+    public GenericResponse deleteUser(@PathVariable Long userId){
         return userService.deleteUser(userId);
     }
+
+    @PostMapping("/{userId}/users/{roleId}")
+    public UserResponse enrollUserInRole(@PathVariable Long userId, @PathVariable Long roleId){
+        return userService.enrollUserInRole(userId, roleId);
+    }
+
+    @GetMapping("/role/{shortCode}")
+    public UserListResponse getUsersByRole(@PathVariable String shortCode) {
+        return  userService.getUsersByRole(shortCode);
+    }
 }
+

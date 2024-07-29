@@ -3,9 +3,7 @@ package com.koza.etiyaspringbootapplication.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Builder
 @Getter
@@ -13,15 +11,10 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+public class Role extends BaseEntity {
 
-public class Role {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String shortCode;
-    private Date createDate;
-    private Date updateDate;
 
-   // @ManyToMany(mappedBy = "roles")
-   // private List<User> users = new ArrayList<User>();
-}
+    @ManyToMany(mappedBy = "roles")
+    private Set<User> users = new HashSet<>();
+   }

@@ -2,10 +2,7 @@ package com.koza.etiyaspringbootapplication.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Builder
 @Getter
@@ -14,23 +11,21 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "\"user\"")
-public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User extends BaseEntity{
 
     @Column(length = 250)
     private String userName;
     private String password;
-
     @Column(length = 250)
     private String email;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date updateDate;
+    private String shortCode;
     private boolean isSystemUser;
 
-   // @ManyToMany
-   // private List<Role> roles = new ArrayList<Role>();
+    @ManyToMany
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
 }

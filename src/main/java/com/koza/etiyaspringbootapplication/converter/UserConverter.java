@@ -21,6 +21,8 @@ public class UserConverter {
                 .userName(user.getUserName())
                 .password(user.getPassword())
                 .email(user.getEmail())
+                .isSystemUser(user.isSystemUser())
+                .shortCode(user.getShortCode())
                 .build();
     }
 }
