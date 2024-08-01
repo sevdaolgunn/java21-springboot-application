@@ -18,8 +18,9 @@ public class User extends BaseEntity{
     private String password;
     @Column(length = 250)
     private String email;
-    private String shortCode;
     private boolean isSystemUser;
+    private String shortCode;
+
 
     @ManyToMany
     @JoinTable(

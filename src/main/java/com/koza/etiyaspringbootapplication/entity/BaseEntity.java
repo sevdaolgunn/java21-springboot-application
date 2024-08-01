@@ -17,6 +17,8 @@ public abstract class BaseEntity {
     @Temporal(TemporalType.TIMESTAMP) // @PreUpdate
     private Date updateDate;
 
+
+
     @PrePersist
     protected void onCreate(){
         createDate = new Date();

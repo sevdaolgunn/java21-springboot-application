@@ -9,17 +9,16 @@ import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
 import com.koza.etiyaspringbootapplication.entity.Role;
 import com.koza.etiyaspringbootapplication.entity.User;
+import com.koza.etiyaspringbootapplication.exception.GenericException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import com.koza.etiyaspringbootapplication.repository.UserRepository;
-import jakarta.persistence.PrePersist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +36,10 @@ public class UserService {
     }
     protected User findById(Long userId){
         return userRepository.findById(userId).orElseThrow(
-                ()-> new RuntimeException("Böyle bir kullanıcı bulunamadı.")
-        );
+                ()-> GenericException.builder()
+                        .errorMessage("Böyle bir kitap bulunamadı.")
+                        .httpStatus(HttpStatus.NOT_FOUND)
+                        .build());
     }
 
     public UserResponse getUser(Long userId){
@@ -74,8 +75,15 @@ public class UserService {
                 .build();
     }
 
-    public UserResponse updateUser( Long userId, UpdateUserRequest request){
-        User user =findById(userId);
+    public GenericResponse updateUser( Long userId, UpdateUserRequest request){
+        Optional<User> optionalUser =userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            return GenericResponse.builder()
+                    .httpStatus(HttpStatus.NOT_FOUND)
+                    .message("Bu ID'ye sahip bir kullanıcı bulunamadı!")
+                    .build();
+        }
+        User user = optionalUser.get();
         user.setUserName(request.getUserName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
@@ -83,9 +91,9 @@ public class UserService {
 
         userRepository.save(user);
 
-        return UserResponse.builder()
-                .user(userConverter.convertAsDto(user))
+        return GenericResponse.builder()
                 .httpStatus(HttpStatus.ACCEPTED)
+                .message("Updated!")
                 .build();
     }
 
@@ -108,25 +116,57 @@ public class UserService {
 
             user.getRoles().add(role);
             user.setSystemUser(true);
-            user.setShortCode(role.getShortCode());
             role.getUsers().add(user);
             userRepository.save(user);
+
+            return UserResponse.builder()
+                    .user(userConverter.convertAsDto(user))
+                    .httpStatus(HttpStatus.OK)
+                    .build();
         }
-        return UserResponse.builder()
+       return UserResponse.builder().build();
+    }
+
+    public GenericResponse addRolesToUser(Long userId, List<String> roleNames){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()) {
+            return GenericResponse.builder()
+                    .message("Böyle bir kullanıcı bulunamadı!")
+                    .httpStatus(HttpStatus.NOT_FOUND)
+                    .build();
+        }
+
+        User user = optionalUser.get();
+
+        for (String roleName : roleNames){
+            Optional<Role> optionalRole = roleRepository.findByShortCode(roleName);
+            if (optionalRole.isEmpty()){
+                return GenericResponse.builder()
+                        .message("Böyle bir rol bulunamadı!")
+                        .httpStatus(HttpStatus.NOT_FOUND)
+                        .build();
+            }
+            Role role = optionalRole.get();
+            user.getRoles().add(role);
+
+        }
+        userRepository.save(user);
+        return GenericResponse.builder()
                 .httpStatus(HttpStatus.OK)
+                .message("Başarıyla eklenmiştir.")
                 .build();
     }
 
-    public UserListResponse getUsersByRole(String shortCode){
-        List<User> userList = userRepository.findByShortCode(shortCode);
-        List<UserDto> userDtoList = new ArrayList<>();
-        for(int i = 0; i<userList.size(); i++) {
-            User user = userList.get(i);
-            userDtoList.add(userConverter.convertAsDto(user));
+    public ResponseEntity<List<String>> getUserRoles(Long userId){
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (optionalUser.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        return UserListResponse.builder()
-                    .userList(userDtoList)
-                    .build();
+        User user = optionalUser.get();
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getShortCode)
+                .collect(Collectors.toList());
+        return new ResponseEntity<>(roles, HttpStatus.OK);
     }
+
 }

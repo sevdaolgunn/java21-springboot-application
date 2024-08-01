@@ -1,15 +1,15 @@
 package com.koza.etiyaspringbootapplication.controller;
+
 import com.koza.etiyaspringbootapplication.dto.request.CreateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
-import com.koza.etiyaspringbootapplication.entity.User;
 import com.koza.etiyaspringbootapplication.service.UserService;
-import jakarta.persistence.PostRemove;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @PutMapping("/update/{userId}")
-    public UserResponse updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request){
+    public GenericResponse updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request){
         return userService.updateUser(userId, request);
     }
 
@@ -47,10 +47,13 @@ public class UserController {
     public UserResponse enrollUserInRole(@PathVariable Long userId, @PathVariable Long roleId){
         return userService.enrollUserInRole(userId, roleId);
     }
-
-    @GetMapping("/role/{shortCode}")
-    public UserListResponse getUsersByRole(@PathVariable String shortCode) {
-        return  userService.getUsersByRole(shortCode);
+    @PostMapping("/{userId}/roles")
+    public GenericResponse addRolesToUser(@PathVariable Long userId, @RequestBody List<String> roleNames){
+        return userService.addRolesToUser(userId, roleNames);
+    }
+    @GetMapping("/{userId}/roles")
+    public ResponseEntity<List<String>> getUserRoles(@PathVariable Long userId){
+        return userService.getUserRoles(userId);
     }
 }
 
