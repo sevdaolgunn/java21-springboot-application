@@ -25,12 +25,20 @@ public class UserController {
 
     @PostMapping("/import-csv")
     public ResponseEntity<String> importCSV(@RequestParam("file") MultipartFile file) {
+
+        if (!isCSVFile(file)) {
+            return ResponseEntity.badRequest().body("Dosya CSV formatında olmak zorundadir.");
+        }
         try {
             csvService.saveUsersFromCSV(file);
-            return ResponseEntity.ok("Users imported successfully.");
+            return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+            return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
         }
+    }
+    private boolean isCSVFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
     }
 
     @PostMapping("/createUser")

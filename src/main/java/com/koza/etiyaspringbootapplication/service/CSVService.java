@@ -32,12 +32,23 @@ public class CSVService {
             List<User> users = new ArrayList<>();
 
             for (CSVRecord csvRecord : csvParser) {
+                String userName = csvRecord.get("userName");
+                String password = csvRecord.get("password");
+                String email = csvRecord.get("email");
+                Boolean isSystemUser = Boolean.valueOf(csvRecord.get("isSystemUser"));
+
+                if (userName == null || userName.isEmpty() ||
+                        password == null || password.isEmpty() ||
+                        email == null || email.isEmpty() ||
+                        isSystemUser == null
+                ) {
+                    throw new IllegalArgumentException("Doldurulması gerekli alanlar boş bırakılmıştır: " + csvRecord.toString());
+                }
                 User user = new User();
                 user.setUserName(csvRecord.get("userName"));
                 user.setPassword(csvRecord.get("password"));
                 user.setEmail(csvRecord.get("email"));
                 user.setSystemUser(Boolean.parseBoolean(csvRecord.get("isSystemUser")));
-                user.setShortCode(csvRecord.get("shortCode"));
                 users.add(user);
             }
 

@@ -19,7 +19,6 @@ public class User extends BaseEntity{
     @Column(length = 250)
     private String email;
     private boolean isSystemUser;
-    private String shortCode;
 
 
     @ManyToMany
