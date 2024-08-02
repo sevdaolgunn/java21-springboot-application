@@ -5,11 +5,14 @@ import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
+import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 @RestController
@@ -17,6 +20,18 @@ import java.util.List;
 @RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
+    @Autowired
+    private final CSVService csvService;
+
+    @PostMapping("/import-csv")
+    public ResponseEntity<String> importCSV(@RequestParam("file") MultipartFile file) {
+        try {
+            csvService.saveUsersFromCSV(file);
+            return ResponseEntity.ok("Users imported successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/createUser")
     public UserResponse createUser(@RequestBody CreateUserRequest request){
@@ -55,5 +70,7 @@ public class UserController {
     public ResponseEntity<List<String>> getUserRoles(@PathVariable Long userId){
         return userService.getUserRoles(userId);
     }
+
+
 }
 
