@@ -9,6 +9,7 @@ import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
 import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
 import com.koza.etiyaspringbootapplication.entity.Role;
 import com.koza.etiyaspringbootapplication.entity.User;
+import com.koza.etiyaspringbootapplication.entity.UserStatus;
 import com.koza.etiyaspringbootapplication.exception.GenericException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import com.koza.etiyaspringbootapplication.repository.UserRepository;
@@ -29,9 +30,13 @@ public class UserService {
 
 
     public UserResponse createUser(CreateUserRequest request){
-        User user = userRepository.save(userConverter.convertAsEntity(request));
+        User user = userConverter.convertAsEntity(request);
+        user.setUserStatus(UserStatus.CREATED);
+        user = userRepository.save(user);
         return UserResponse.builder()
                 .user(userConverter.convertAsDto(user))
+                .message("CREATED!")
+                .httpStatus(HttpStatus.OK)
                 .build();
     }
     protected User findById(Long userId){
@@ -48,6 +53,7 @@ public class UserService {
         UserDto userDto = userConverter.convertAsDto(user);
         return UserResponse.builder()
                 .user(userDto)
+                .message("OK")
                 .httpStatus(HttpStatus.OK)
                 .build();
     }
@@ -111,6 +117,7 @@ public class UserService {
 
             return UserResponse.builder()
                     .user(userConverter.convertAsDto(user))
+                    .message("ENROLLED!")
                     .httpStatus(HttpStatus.OK)
                     .build();
         }
