@@ -10,6 +10,8 @@ public class RoleConverter {
 
     public Role convertAsEntity(RoleRequest request){
         return Role.builder()
+                .roleName(request.getRoleName())
+                .description(request.getDescription())
                 .shortCode(request.getShortCode())
                 .build();
     }
@@ -17,6 +19,8 @@ public class RoleConverter {
     public RoleDto convertAsDto(Role role){
         return RoleDto.builder()
                 .id(role.getId())
+                .roleName(role.getRoleName())
+                .description(role.getDescription())
                 .shortCode(role.getShortCode())
                 .build();
     }

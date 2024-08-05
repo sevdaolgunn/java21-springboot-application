@@ -37,18 +37,13 @@ public class UserService {
     protected User findById(Long userId){
         return userRepository.findById(userId).orElseThrow(
                 ()-> GenericException.builder()
-                        .errorMessage("Böyle bir kitap bulunamadı.")
+                        .errorMessage("Böyle bir kullanıcı bulunamadı.")
                         .httpStatus(HttpStatus.NOT_FOUND)
                         .build());
     }
 
     public UserResponse getUser(Long userId){
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()){
-            return UserResponse.builder()
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        Optional<User> optionalUser = Optional.ofNullable(findById(userId));
         User user = optionalUser.get();
         UserDto userDto = userConverter.convertAsDto(user);
         return UserResponse.builder()
@@ -76,13 +71,8 @@ public class UserService {
     }
 
     public GenericResponse updateUser( Long userId, UpdateUserRequest request){
-        Optional<User> optionalUser =userRepository.findById(userId);
-        if (optionalUser.isEmpty()){
-            return GenericResponse.builder()
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .message("Bu ID'ye sahip bir kullanıcı bulunamadı!")
-                    .build();
-        }
+        Optional<User> optionalUser = Optional.ofNullable(findById(userId));
+
         User user = optionalUser.get();
         user.setUserName(request.getUserName());
         user.setEmail(request.getEmail());

@@ -6,6 +6,7 @@ import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
 import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
 import com.koza.etiyaspringbootapplication.dto.response.RoleResponse;
 import com.koza.etiyaspringbootapplication.entity.Role;
+import com.koza.etiyaspringbootapplication.exception.GenericException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,18 +29,15 @@ public class RoleService {
 
     protected Role findById(Long roleId){
         return roleRepository.findById(roleId).orElseThrow(
-                ()->new RuntimeException("Böyle bir role bulunamadı")
-        );
+                ()-> GenericException.builder()
+                        .errorMessage("Böyle bir rol bulunamadı.")
+                        .httpStatus(HttpStatus.NOT_FOUND)
+                        .build());
+
     }
 
     public RoleResponse getRole(Long roleId){
-        Optional<Role> optionalRole = roleRepository.findById(roleId);
-        if (optionalRole.isEmpty()){
-            return RoleResponse.builder()
-                    .message("Not found")
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .build();
-        }
+        Optional<Role> optionalRole = Optional.ofNullable(findById(roleId));
 
         Role role = optionalRole.get();
         RoleDto roleDto = roleConverter.convertAsDto(role);

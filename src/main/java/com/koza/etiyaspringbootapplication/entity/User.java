@@ -2,6 +2,8 @@ package com.koza.etiyaspringbootapplication.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Builder
@@ -19,6 +21,10 @@ public class User extends BaseEntity{
     @Column(length = 250)
     private String email;
     private boolean isSystemUser;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "userStatus")
+    private UserStatus userStatus;
+    private LocalDateTime birthDate;
 
 
     @ManyToMany

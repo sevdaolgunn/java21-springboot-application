@@ -7,12 +7,8 @@ import org.springframework.http.HttpStatus;
 import java.util.List;
 
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@ToString
-@Getter
-@Setter
-public class UserListResponse {
-    private List<UserDto> userList;
-    private HttpStatus httpStatus;
+
+public record UserListResponse(List<UserDto> userList,
+                               HttpStatus httpStatus) {
+
 }

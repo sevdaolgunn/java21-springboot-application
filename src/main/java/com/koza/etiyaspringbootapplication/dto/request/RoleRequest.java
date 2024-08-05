@@ -9,5 +9,7 @@ import lombok.Setter;
 @Setter
 public class RoleRequest {
     private String shortCode;
+    private String roleName;
+    private String description;
 
 }

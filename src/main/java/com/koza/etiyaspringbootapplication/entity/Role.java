@@ -13,8 +13,9 @@ import java.util.*;
 @Entity
 public class Role extends BaseEntity {
 
+    private String roleName;
+    private String description;
     private String shortCode;
-
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
    }
