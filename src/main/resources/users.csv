@@ -1,0 +1,3 @@
+userName,password,email,isSystemUser,shortCode
+john_doe,12345,john@example.com,true,jd123
+jane_doe,54321,jane@example.com,false,jd456

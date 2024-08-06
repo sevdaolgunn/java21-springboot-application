@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: etiya-springboot-application
+
+  h2:
+    console:
+      enabled: true
+
+  datasource:
+    url: jdbc:h2:mem:dsen
+    driverClassName: org.h2.Driver
+    username: admin
+    password: 1234qwer
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
+server:
+  port: 8085
