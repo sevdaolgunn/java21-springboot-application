@@ -1,14 +1,11 @@
 package com.koza.etiyaspringbootapplication.controller;
 
+import com.koza.etiyaspringbootapplication.dto.UserDto;
 import com.koza.etiyaspringbootapplication.dto.request.CreateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
-import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
-import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
-import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
 import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,7 +17,6 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
-    @Autowired
     private final CSVService csvService;
 
     @PostMapping("/import-csv")
@@ -41,38 +37,39 @@ public class UserController {
         return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
     }
 
-    @PostMapping("/createUser")
-    public UserResponse createUser(@RequestBody CreateUserRequest request){
-        return userService.createUser(request);
+    @PostMapping()
+    public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request){
+        UserDto userDto =  userService.createUser(request);
+        return ResponseEntity.ok(userDto);
     }
 
-    @GetMapping("/getUser/{userId}")
-    public UserResponse getUser(@PathVariable Long userId){
-        return userService.getUser(userId);
+    @GetMapping("{userId}")
+    public ResponseEntity<UserDto> getUser(@PathVariable Long userId){
+       UserDto userDto =  userService.getUser(userId);
+        return ResponseEntity.ok(userDto);
     }
 
-    @GetMapping("/getAllUser")
-    public UserListResponse getAllUser(){
-        return userService.getAllUser();
+    @GetMapping()
+    public ResponseEntity<List<UserDto>> getAllUser(){
+        List<UserDto> userDtoList = userService.getAllUser();
+        return ResponseEntity.ok(userDtoList);
     }
 
-    @PutMapping("/update/{userId}")
-    public GenericResponse updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request){
-        return userService.updateUser(userId, request);
+    @PutMapping("{userId}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable Long userId, @RequestBody UpdateUserRequest request){
+        UserDto userDto = userService.updateUser(userId, request);
+        return ResponseEntity.ok(userDto);
     }
 
-    @DeleteMapping("/delete/{userId}")
-    public GenericResponse deleteUser(@PathVariable Long userId){
-        return userService.deleteUser(userId);
-    }
-
-    @PostMapping("/{userId}/users/{roleId}")
-    public UserResponse enrollUserInRole(@PathVariable Long userId, @PathVariable Long roleId){
-        return userService.enrollUserInRole(userId, roleId);
+    @DeleteMapping("{userId}")
+    public ResponseEntity<UserDto> deleteUser(@PathVariable Long userId){
+        UserDto userDto = userService.deleteUser(userId);
+        return ResponseEntity.ok(userDto);
     }
     @PostMapping("/{userId}/roles")
-    public GenericResponse addRolesToUser(@PathVariable Long userId, @RequestBody List<String> roleNames){
-        return userService.addRolesToUser(userId, roleNames);
+    public ResponseEntity<UserDto> addRolesToUser(@PathVariable Long userId, @RequestBody List<String> roleNames){
+        UserDto userDto = userService.addRolesToUser(userId, roleNames);
+        return ResponseEntity.ok(userDto);
     }
     @GetMapping("/{userId}/roles")
     public ResponseEntity<List<String>> getUserRoles(@PathVariable Long userId){

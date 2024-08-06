@@ -1,10 +1,10 @@
 package com.koza.etiyaspringbootapplication.controller;
 
+import com.koza.etiyaspringbootapplication.dto.RoleDto;
 import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
-import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
-import com.koza.etiyaspringbootapplication.dto.response.RoleResponse;
 import com.koza.etiyaspringbootapplication.service.RoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -13,23 +13,27 @@ import org.springframework.web.bind.annotation.*;
 public class RoleController {
     private final RoleService roleService;
 
-    @PostMapping("/createRole")
-    public RoleResponse createRole(@RequestBody RoleRequest request){
-        return roleService.createRole(request);
+    @PostMapping("")
+    public ResponseEntity<RoleDto> createRole(@RequestBody RoleRequest request){
+        RoleDto roleDto = roleService.createRole(request);
+        return ResponseEntity.ok(roleDto);
     }
 
-    @GetMapping("/getRole/{roleId}")
-    public RoleResponse getRole(@PathVariable Long roleId){
-        return roleService.getRole(roleId);
+    @GetMapping("{roleId}")
+    public ResponseEntity<RoleDto> getRole(@PathVariable Long roleId){
+        RoleDto roleDto = roleService.getRole(roleId);
+        return ResponseEntity.ok(roleDto);
 
     }
-    @PutMapping("/update/{roleId}")
-    public RoleResponse updateRole(@PathVariable Long roleId, @RequestBody RoleRequest request){
-        return roleService.updateRole(roleId, request);
+    @PutMapping("{roleId}")
+    public ResponseEntity<RoleDto> updateRole(@PathVariable Long roleId, @RequestBody RoleRequest request){
+        RoleDto roleDto =  roleService.updateRole(roleId, request);
+        return ResponseEntity.ok(roleDto);
     }
 
-    @DeleteMapping("/delete/{roleId}")
-    public GenericResponse delete(@PathVariable Long roleId){
-        return roleService.deleteRole(roleId);
+    @DeleteMapping("{roleId}")
+    public ResponseEntity<RoleDto> delete(@PathVariable Long roleId){
+        RoleDto roleDto = roleService.deleteRole(roleId);
+        return ResponseEntity.ok(roleDto);
     }
 }

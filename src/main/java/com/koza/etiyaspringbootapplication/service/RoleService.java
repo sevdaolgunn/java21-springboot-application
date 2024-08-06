@@ -3,13 +3,10 @@ package com.koza.etiyaspringbootapplication.service;
 import com.koza.etiyaspringbootapplication.converter.RoleConverter;
 import com.koza.etiyaspringbootapplication.dto.RoleDto;
 import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
-import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
-import com.koza.etiyaspringbootapplication.dto.response.RoleResponse;
 import com.koza.etiyaspringbootapplication.entity.Role;
-import com.koza.etiyaspringbootapplication.exception.GenericException;
+import com.koza.etiyaspringbootapplication.exception.ModelNotFoundException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,53 +17,39 @@ public class RoleService {
     private final RoleRepository roleRepository;
     private final RoleConverter roleConverter;
 
-    public RoleResponse createRole(RoleRequest request){
+    public RoleDto createRole(RoleRequest request){
         Role role = roleRepository.save(roleConverter.convertAsEntity(request));
-        return RoleResponse.builder()
-                .role(roleConverter.convertAsDto(role))
-                .build();
+        return roleConverter.convertAsDto(role);
     }
 
     protected Role findById(Long roleId){
         return roleRepository.findById(roleId).orElseThrow(
-                ()-> GenericException.builder()
-                        .errorMessage("Böyle bir rol bulunamadı.")
-                        .httpStatus(HttpStatus.NOT_FOUND)
-                        .build());
-
+                ()-> new ModelNotFoundException("Böyle bir rol bulunamamıştır!")
+        );
     }
 
-    public RoleResponse getRole(Long roleId){
+    public RoleDto getRole(Long roleId){
         Optional<Role> optionalRole = Optional.ofNullable(findById(roleId));
 
         Role role = optionalRole.get();
-        RoleDto roleDto = roleConverter.convertAsDto(role);
-        return RoleResponse.builder()
-                .role(roleDto)
-                .httpStatus(HttpStatus.OK)
-                .message("OK")
-                .build();
+        return roleConverter.convertAsDto(role);
+
     }
 
-    public RoleResponse updateRole(Long roleId, RoleRequest request){
+    public RoleDto updateRole(Long roleId, RoleRequest request){
         Role role = findById(roleId);
         role.setShortCode(request.getShortCode());
+        role.setRoleName(request.getRoleName());
+        role.setDescription(request.getDescription());
 
         roleRepository.save(role);
-        return RoleResponse.builder()
-                .role(roleConverter.convertAsDto(role))
-                .message("Updated!")
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return roleConverter.convertAsDto(role);
     }
 
 
-    public GenericResponse deleteRole(Long roleId){
+    public RoleDto deleteRole(Long roleId){
         Role role = findById(roleId);
         roleRepository.delete(role);
-        return GenericResponse.builder()
-                .message("DELETED!")
-                .httpStatus(HttpStatus.ACCEPTED)
-                .build();
+        return roleConverter.convertAsDto(role);
     }
 }

@@ -4,13 +4,10 @@ import com.koza.etiyaspringbootapplication.converter.UserConverter;
 import com.koza.etiyaspringbootapplication.dto.UserDto;
 import com.koza.etiyaspringbootapplication.dto.request.CreateUserRequest;
 import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
-import com.koza.etiyaspringbootapplication.dto.response.GenericResponse;
-import com.koza.etiyaspringbootapplication.dto.response.UserListResponse;
-import com.koza.etiyaspringbootapplication.dto.response.UserResponse;
 import com.koza.etiyaspringbootapplication.entity.Role;
 import com.koza.etiyaspringbootapplication.entity.User;
 import com.koza.etiyaspringbootapplication.entity.UserStatus;
-import com.koza.etiyaspringbootapplication.exception.GenericException;
+import com.koza.etiyaspringbootapplication.exception.ModelNotFoundException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import com.koza.etiyaspringbootapplication.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,54 +26,40 @@ public class UserService {
     private final RoleRepository roleRepository;
 
 
-    public UserResponse createUser(CreateUserRequest request){
+    public UserDto createUser(CreateUserRequest request){
         User user = userConverter.convertAsEntity(request);
         user.setUserStatus(UserStatus.CREATED);
         user = userRepository.save(user);
-        return UserResponse.builder()
-                .user(userConverter.convertAsDto(user))
-                .message("CREATED!")
-                .httpStatus(HttpStatus.OK)
-                .build();
+
+        return userConverter.convertAsDto(user);
     }
     protected User findById(Long userId){
         return userRepository.findById(userId).orElseThrow(
-                ()-> GenericException.builder()
-                        .errorMessage("Böyle bir kullanıcı bulunamadı.")
-                        .httpStatus(HttpStatus.NOT_FOUND)
-                        .build());
+                ()-> new ModelNotFoundException("Böyle bir kullanıcı bulunamamıştır!")
+        );
     }
 
-    public UserResponse getUser(Long userId){
+    public UserDto getUser(Long userId){
         Optional<User> optionalUser = Optional.ofNullable(findById(userId));
         User user = optionalUser.get();
-        UserDto userDto = userConverter.convertAsDto(user);
-        return UserResponse.builder()
-                .user(userDto)
-                .message("OK")
-                .httpStatus(HttpStatus.OK)
-                .build();
+
+        return userConverter.convertAsDto(user);
     }
 
-    public UserListResponse getAllUser(){
+    public List<UserDto> getAllUser(){
         List<User> userList = userRepository.findAll();
         if(userList.isEmpty()){
-            return UserListResponse.builder()
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .build();
+            throw new RuntimeException();
         }
         List<UserDto> userDtoList = new ArrayList<>();
         for (int i=0; i < userList.size(); i++) {
             User user =userList.get(i);
             userDtoList.add(userConverter.convertAsDto(user));
         }
-        return UserListResponse.builder()
-                .userList(userDtoList)
-                .httpStatus(HttpStatus.OK)
-                .build();
+        return userDtoList;
     }
 
-    public GenericResponse updateUser( Long userId, UpdateUserRequest request){
+    public UserDto updateUser( Long userId, UpdateUserRequest request){
         Optional<User> optionalUser = Optional.ofNullable(findById(userId));
 
         User user = optionalUser.get();
@@ -84,53 +67,22 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
 
+        user =  userRepository.save(user);
 
-        userRepository.save(user);
-
-        return GenericResponse.builder()
-                .httpStatus(HttpStatus.ACCEPTED)
-                .message("Updated!")
-                .build();
+        return userConverter.convertAsDto(user);
     }
 
-    public GenericResponse deleteUser(Long userId){
+    public UserDto deleteUser(Long userId){
         User user = findById(userId);
         userRepository.delete(user);
-        return GenericResponse.builder()
-                .message("DELETED!")
-                .httpStatus(HttpStatus.ACCEPTED)
-                .build();
+        return userConverter.convertAsDto(user);
     }
 
-    public UserResponse enrollUserInRole(Long userId, Long roleId){
-        Optional<User> userOptional = userRepository.findById(userId);
-        Optional<Role> roleOptional = roleRepository.findById(roleId);
 
-        if (userOptional.isPresent() && roleOptional.isPresent()){
-            User user = userOptional.get();
-            Role role = roleOptional.get();
-
-            user.getRoles().add(role);
-            user.setSystemUser(true);
-            role.getUsers().add(user);
-            userRepository.save(user);
-
-            return UserResponse.builder()
-                    .user(userConverter.convertAsDto(user))
-                    .message("ENROLLED!")
-                    .httpStatus(HttpStatus.OK)
-                    .build();
-        }
-       return UserResponse.builder().build();
-    }
-
-    public GenericResponse addRolesToUser(Long userId, List<String> roleNames){
+    public UserDto addRolesToUser(Long userId, List<String> roleNames){
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            return GenericResponse.builder()
-                    .message("Böyle bir kullanıcı bulunamadı!")
-                    .httpStatus(HttpStatus.NOT_FOUND)
-                    .build();
+            throw new RuntimeException();
         }
 
         User user = optionalUser.get();
@@ -138,20 +90,15 @@ public class UserService {
         for (String roleName : roleNames){
             Optional<Role> optionalRole = roleRepository.findByShortCode(roleName);
             if (optionalRole.isEmpty()){
-                return GenericResponse.builder()
-                        .message("Böyle bir rol bulunamadı!")
-                        .httpStatus(HttpStatus.NOT_FOUND)
-                        .build();
+                throw new RuntimeException();
             }
             Role role = optionalRole.get();
             user.getRoles().add(role);
 
         }
-        userRepository.save(user);
-        return GenericResponse.builder()
-                .httpStatus(HttpStatus.OK)
-                .message("Başarıyla eklenmiştir.")
-                .build();
+        user = userRepository.save(user);
+        UserDto userDto = userConverter.convertAsDto(user);
+        return userDto;
     }
 
     public ResponseEntity<List<String>> getUserRoles(Long userId){
