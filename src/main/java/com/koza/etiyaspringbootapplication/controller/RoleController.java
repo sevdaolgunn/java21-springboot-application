@@ -2,16 +2,37 @@ package com.koza.etiyaspringbootapplication.controller;
 
 import com.koza.etiyaspringbootapplication.dto.RoleDto;
 import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
+import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/roles")
 public class RoleController {
     private final RoleService roleService;
+    private final CSVService csvService;
+
+    @PostMapping("/import-csv")
+    public ResponseEntity<String> importCSV(@RequestParam("file") MultipartFile file) {
+
+        if (!isCSVFile(file)) {
+            return ResponseEntity.badRequest().body("Dosya CSV formatında olmak zorundadir.");
+        }
+        try {
+            csvService.saveUsersFromCSV(file);
+            return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
+        }
+    }
+    private boolean isCSVFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
+    }
 
     @PostMapping("")
     public ResponseEntity<RoleDto> createRole(@RequestBody RoleRequest request){

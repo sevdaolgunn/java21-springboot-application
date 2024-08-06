@@ -1,7 +1,9 @@
 package com.koza.etiyaspringbootapplication.service;
 
 
+import com.koza.etiyaspringbootapplication.entity.Role;
 import com.koza.etiyaspringbootapplication.entity.User;
+import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import com.koza.etiyaspringbootapplication.repository.UserRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -25,6 +27,7 @@ public class CSVService {
 
     @Autowired
     private UserRepository userRepository;
+    private RoleRepository roleRepository;
 
     public void saveUsersFromCSV(MultipartFile file) throws Exception {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
@@ -53,6 +56,33 @@ public class CSVService {
             }
 
             userRepository.saveAll(users);
+        }
+    }
+
+    public void saveRolesFromCSV(MultipartFile file) throws Exception {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim());
+            List<Role> roles = new ArrayList<>();
+
+            for (CSVRecord csvRecord : csvParser) {
+                String roleName  = csvRecord.get("roleName");
+                String shortCode = csvRecord.get("shortCode");
+                String description = csvRecord.get("description");
+
+                if (roleName == null || roleName.isEmpty() ||
+                        shortCode == null || shortCode.isEmpty() ||
+                        description == null || description.isEmpty()
+                ) {
+                    throw new IllegalArgumentException("Doldurulması gerekli alanlar boş bırakılmıştır: " + csvRecord.toString());
+                }
+                Role role = new Role();
+                role.setRoleName(csvRecord.get("roleName"));
+                role.setShortCode(csvRecord.get("shortCode"));
+                role.setDescription(csvRecord.get("description"));
+                roles.add(role);
+            }
+
+            roleRepository.saveAll(roles);
         }
     }
 
