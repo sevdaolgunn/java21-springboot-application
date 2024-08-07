@@ -49,7 +49,7 @@ public class UserService {
     public List<UserDto> getAllUser(){
         List<User> userList = userRepository.findAll();
         if(userList.isEmpty()){
-            throw new RuntimeException();
+            throw new ModelNotFoundException("Kayıtlı kullanıcı bulunamadı!");
         }
         List<UserDto> userDtoList = new ArrayList<>();
         for (int i=0; i < userList.size(); i++) {
@@ -82,23 +82,23 @@ public class UserService {
     public UserDto addRolesToUser(Long userId, List<String> roleNames){
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new RuntimeException();
+            throw new ModelNotFoundException("Böyle bir kullanıcı bulunamadı!");
         }
 
         User user = optionalUser.get();
 
         for (String roleName : roleNames){
-            Optional<Role> optionalRole = roleRepository.findByShortCode(roleName);
+            Optional<Role> optionalRole = roleRepository.findByRoleName(roleName);
             if (optionalRole.isEmpty()){
-                throw new RuntimeException();
+                throw new ModelNotFoundException("Böyle bir role bulunamadı!");
             }
             Role role = optionalRole.get();
             user.getRoles().add(role);
 
         }
+        user.setSystemUser(true);
         user = userRepository.save(user);
-        UserDto userDto = userConverter.convertAsDto(user);
-        return userDto;
+        return userConverter.convertAsDto(user);
     }
 
     public ResponseEntity<List<String>> getUserRoles(Long userId){
@@ -108,7 +108,7 @@ public class UserService {
         }
         User user = optionalUser.get();
         List<String> roles = user.getRoles().stream()
-                .map(Role::getShortCode)
+                .map(Role::getRoleName)
                 .collect(Collectors.toList());
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }

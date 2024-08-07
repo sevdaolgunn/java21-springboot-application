@@ -2,13 +2,17 @@ package com.koza.etiyaspringbootapplication.service;
 
 import com.koza.etiyaspringbootapplication.converter.RoleConverter;
 import com.koza.etiyaspringbootapplication.dto.RoleDto;
+import com.koza.etiyaspringbootapplication.dto.UserDto;
 import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
 import com.koza.etiyaspringbootapplication.entity.Role;
+import com.koza.etiyaspringbootapplication.entity.User;
 import com.koza.etiyaspringbootapplication.exception.ModelNotFoundException;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,6 +38,18 @@ public class RoleService {
         Role role = optionalRole.get();
         return roleConverter.convertAsDto(role);
 
+    }
+    public List<RoleDto> getAllRole(){
+        List<Role> roleList = roleRepository.findAll();
+        if(roleList.isEmpty()){
+            throw new ModelNotFoundException("Kayıtlı bir role bulunamadı!");
+        }
+        List<RoleDto> roleDtoList = new ArrayList<>();
+        for (int i=0; i < roleList.size(); i++) {
+            Role role =roleList.get(i);
+            roleDtoList.add(roleConverter.convertAsDto(role));
+        }
+        return roleDtoList;
     }
 
     public RoleDto updateRole(Long roleId, RoleRequest request){
