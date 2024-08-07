@@ -1,13 +1,19 @@
 package com.koza.etiyaspringbootapplication.controller;
 
 import com.koza.etiyaspringbootapplication.dto.RoleDto;
+import com.koza.etiyaspringbootapplication.dto.UserDto;
 import com.koza.etiyaspringbootapplication.dto.request.RoleRequest;
 import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.RoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +29,7 @@ public class RoleController {
             return ResponseEntity.badRequest().body("Dosya CSV formatında olmak zorundadir.");
         }
         try {
-            csvService.saveUsersFromCSV(file);
+            csvService.saveRolesFromCSV(file);
             return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
@@ -32,6 +38,20 @@ public class RoleController {
     private boolean isCSVFile(MultipartFile file) {
         String contentType = file.getContentType();
         return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<ByteArrayResource> exportRolesToCSV() {
+        try {
+            ByteArrayResource resource = csvService.exportRolesToCSV();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=roles.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(resource.contentLength())
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PostMapping("")
@@ -45,6 +65,11 @@ public class RoleController {
         RoleDto roleDto = roleService.getRole(roleId);
         return ResponseEntity.ok(roleDto);
 
+    }
+    @GetMapping()
+    public ResponseEntity<List<RoleDto>> getAllUser(){
+        List<RoleDto> roleDtoList = roleService.getAllRole();
+        return ResponseEntity.ok(roleDtoList);
     }
     @PutMapping("{roleId}")
     public ResponseEntity<RoleDto> updateRole(@PathVariable Long roleId, @RequestBody RoleRequest request){

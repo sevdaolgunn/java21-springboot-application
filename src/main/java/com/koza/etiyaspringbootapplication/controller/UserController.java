@@ -6,6 +6,9 @@ import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
 import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +38,20 @@ public class UserController {
     private boolean isCSVFile(MultipartFile file) {
         String contentType = file.getContentType();
         return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<ByteArrayResource> exportRolesToCSV() {
+        try {
+            ByteArrayResource resource = csvService.exportUsersToCSV();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=roles.csv")
+                    .contentType(MediaType.parseMediaType("text/csv"))
+                    .contentLength(resource.contentLength())
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
     }
 
     @PostMapping()
