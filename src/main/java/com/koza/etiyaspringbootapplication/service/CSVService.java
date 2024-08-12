@@ -3,6 +3,7 @@ package com.koza.etiyaspringbootapplication.service;
 
 import com.koza.etiyaspringbootapplication.entity.Role;
 import com.koza.etiyaspringbootapplication.entity.User;
+import com.koza.etiyaspringbootapplication.entity.UserStatus;
 import com.koza.etiyaspringbootapplication.repository.RoleRepository;
 import com.koza.etiyaspringbootapplication.repository.UserRepository;
 import org.apache.commons.csv.CSVFormat;
@@ -16,15 +17,19 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CSVService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
     private RoleRepository roleRepository;
 
     public void saveUsersFromCSV(MultipartFile file) throws Exception {
@@ -37,12 +42,11 @@ public class CSVService {
                 String userName = csvRecord.get("userName");
                 String password = csvRecord.get("password");
                 String email = csvRecord.get("email");
-                Boolean isSystemUser = Boolean.valueOf(csvRecord.get("isSystemUser"));
+                String roles = csvRecord.get("roles");
 
                 if (userName == null || userName.isEmpty() ||
                         password == null || password.isEmpty() ||
-                        email == null || email.isEmpty() ||
-                        isSystemUser == null
+                        email == null || email.isEmpty()
                 ) {
                     throw new IllegalArgumentException("Doldurulması gerekli alanlar boş bırakılmıştır: " + csvRecord.toString());
                 }
@@ -56,7 +60,18 @@ public class CSVService {
                 user.setUserName(csvRecord.get("userName"));
                 user.setPassword(csvRecord.get("password"));
                 user.setEmail(csvRecord.get("email"));
-                user.setSystemUser(Boolean.parseBoolean(csvRecord.get("isSystemUser")));
+                user.setBirthDate(LocalDateTime.parse(csvRecord.get("birthdate")));
+                user.setUserStatus(UserStatus.CREATED);
+                if (roles != null && !roles.isEmpty()) {
+                    List<String> roleNames = Arrays.asList(roles.split(","));
+                    for (String roleName : roleNames) {
+                        Role role = saveRoleIfNotExists(roleName);
+                        user.getRoles().add(role);
+                        user.setSystemUser(true);
+                    }
+                } else {
+                    user.setSystemUser(false);
+                }
                 users.add(user);
             }
 
@@ -68,10 +83,14 @@ public class CSVService {
         List<User> users = userRepository.findAll();
 
         StringWriter writer = new StringWriter();
-        CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id", "userName", "email", "password", "userStatus", "birthdate"));
+        CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id", "userName", "email", "password", "userStatus", "birthdate","roles"));
 
         for (User user : users) {
-            csvPrinter.printRecord(user.getId(),user.getUserName(), user.getEmail(), user.getPassword(),user.getUserStatus(),user.getBirthDate());
+
+            String roles = user.getRoles().stream()
+                            .map(Role::getRoleName)
+                                    .collect(Collectors.joining(","));
+            csvPrinter.printRecord(user.getId(),user.getUserName(), user.getEmail(), user.getPassword(),user.getUserStatus(),user.getBirthDate(),roles);
         }
 
         csvPrinter.flush();
@@ -118,7 +137,7 @@ public class CSVService {
         List<Role> roles = roleRepository.findAll();
 
         StringWriter writer = new StringWriter();
-        CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id", "roleName", "description"));
+        CSVPrinter csvPrinter = new CSVPrinter(writer, CSVFormat.DEFAULT.withHeader("id","shortCode", "roleName", "description"));
 
         for (Role role : roles) {
             csvPrinter.printRecord(role.getId(),role.getShortCode(), role.getRoleName(), role.getDescription());
@@ -129,4 +148,15 @@ public class CSVService {
 
         return new ByteArrayResource(writer.toString().getBytes());
     }
+    public Role saveRoleIfNotExists(String roleName) {
+        Optional<Role> existingRole = roleRepository.findByRoleName(roleName.trim());
+        if (existingRole.isPresent()) {
+            return existingRole.get();
+        } else {
+            Role newRole = new Role();
+            newRole.setRoleName(roleName.trim());
+            return roleRepository.save(newRole);
+        }
+    }
+
 }
