@@ -1,5 +1,7 @@
 package com.koza.etiyaspringbootapplication.entity;
 
+import com.koza.etiyaspringbootapplication.annotations.Exportable;
+import com.koza.etiyaspringbootapplication.annotations.Importable;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,15 +17,24 @@ import java.util.*;
 @Table(name = "\"user\"")
 public class User extends BaseEntity{
 
-    @Column(length = 250)
+    @Exportable
+    @Importable
     private String userName;
+    @Exportable
+    @Importable
     private String password;
-    @Column(length = 250)
+    @Exportable
+    @Importable
     private String email;
+    @Exportable
     private boolean isSystemUser;
     @Enumerated(EnumType.STRING)
     @Column(name = "userStatus")
+    @Exportable
+    @Importable
     private UserStatus userStatus;
+    @Exportable
+    @Importable
     private LocalDateTime birthDate;
 
 
@@ -33,5 +44,7 @@ public class User extends BaseEntity{
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+    @Exportable
+    @Importable
     private Set<Role> roles = new HashSet<>();
 }

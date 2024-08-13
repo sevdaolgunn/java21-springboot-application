@@ -30,28 +30,23 @@ public class RoleController {
         }
         try {
             csvService.saveRolesFromCSV(file);
-            return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
+            return ResponseEntity.ok("Roller başarıyla içe aktarıldı.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
+            return ResponseEntity.status(500).body("İçe aktarma sırasında bir hata oluştu " + e.getMessage());
         }
     }
     private boolean isCSVFile(MultipartFile file) {
         String contentType = file.getContentType();
         return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
     }
+    @GetMapping("/export-csv")
+    public ResponseEntity<ByteArrayResource> exportToCSV() throws Exception {
+        ByteArrayResource resource = csvService.exportRolesToCSV("Role");
 
-    @GetMapping("/export")
-    public ResponseEntity<ByteArrayResource> exportRolesToCSV() {
-        try {
-            ByteArrayResource resource = csvService.exportRolesToCSV();
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=roles.csv")
-                    .contentType(MediaType.parseMediaType("text/csv"))
-                    .contentLength(resource.contentLength())
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=roles.csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(resource);
     }
 
     @PostMapping("")

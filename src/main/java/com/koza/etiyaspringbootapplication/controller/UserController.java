@@ -6,8 +6,10 @@ import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
 import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,37 +24,35 @@ public class UserController {
     private final UserService userService;
     private final CSVService csvService;
 
-    @PostMapping("/import-csv")
-    public ResponseEntity<String> importCSV(@RequestParam("file") MultipartFile file) {
 
-        if (!isCSVFile(file)) {
-            return ResponseEntity.badRequest().body("Dosya CSV formatında olmak zorundadir.");
-        }
+
+    @PostMapping("/import-csv")
+    public ResponseEntity<String> importUsersFromCSV(@RequestParam("file") MultipartFile file) {
         try {
+            if (!isValidCSVFormat(file)) {
+                return ResponseEntity.badRequest().body("Geçersiz CSV formatı.");
+            }
             csvService.saveUsersFromCSV(file);
-            return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
+            return ResponseEntity.ok("Kullanıcılar başarıyla içe aktarıldı.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("İçe aktarma sırasında bir hata oluştu: " + e.getMessage());
         }
     }
-    private boolean isCSVFile(MultipartFile file) {
+    private boolean isValidCSVFormat(MultipartFile file) {
         String contentType = file.getContentType();
         return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
     }
 
-    @GetMapping("/export")
-    public ResponseEntity<ByteArrayResource> exportRolesToCSV() {
-        try {
-            ByteArrayResource resource = csvService.exportUsersToCSV();
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=roles.csv")
-                    .contentType(MediaType.parseMediaType("text/csv"))
-                    .contentLength(resource.contentLength())
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+    @GetMapping("/export-csv")
+    public ResponseEntity<ByteArrayResource> exportToCSV() throws Exception {
+        ByteArrayResource resource = csvService.exportUsersToCSV("User");
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv")
+                .contentType(MediaType.parseMediaType("application/csv"))
+                .body(resource);
     }
+
 
     @PostMapping()
     public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request){
@@ -92,6 +92,7 @@ public class UserController {
     public ResponseEntity<List<String>> getUserRoles(@PathVariable Long userId){
         return userService.getUserRoles(userId);
     }
+
 
 
 }
