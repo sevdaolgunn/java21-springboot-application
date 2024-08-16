@@ -6,6 +6,11 @@ import com.koza.etiyaspringbootapplication.dto.request.UpdateUserRequest;
 import com.koza.etiyaspringbootapplication.service.CSVService;
 import com.koza.etiyaspringbootapplication.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,23 +24,10 @@ public class UserController {
     private final UserService userService;
     private final CSVService csvService;
 
-    @PostMapping("/import-csv")
-    public ResponseEntity<String> importCSV(@RequestParam("file") MultipartFile file) {
 
-        if (!isCSVFile(file)) {
-            return ResponseEntity.badRequest().body("Dosya CSV formatında olmak zorundadir.");
-        }
-        try {
-            csvService.saveUsersFromCSV(file);
-            return ResponseEntity.ok("Yükleme işlemi tamamlandı.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Bir hata: " + e.getMessage());
-        }
-    }
-    private boolean isCSVFile(MultipartFile file) {
-        String contentType = file.getContentType();
-        return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
-    }
+
+
+
 
     @PostMapping()
     public ResponseEntity<UserDto> createUser(@RequestBody CreateUserRequest request){
@@ -75,6 +67,7 @@ public class UserController {
     public ResponseEntity<List<String>> getUserRoles(@PathVariable Long userId){
         return userService.getUserRoles(userId);
     }
+
 
 
 }
