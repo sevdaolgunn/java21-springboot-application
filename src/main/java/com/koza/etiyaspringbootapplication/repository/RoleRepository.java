@@ -1,15 +1,13 @@
 package com.koza.etiyaspringbootapplication.repository;
 
 import com.koza.etiyaspringbootapplication.entity.Role;
-import com.koza.etiyaspringbootapplication.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
-
+@Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findById(Long roleId);
-    Optional<Role> findByShortCode(String shortCode);
     Optional<Role> findByRoleName(String roleName);
 
 

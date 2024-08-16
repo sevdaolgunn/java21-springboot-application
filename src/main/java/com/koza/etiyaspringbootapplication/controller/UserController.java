@@ -26,32 +26,7 @@ public class UserController {
 
 
 
-    @PostMapping("/import-csv")
-    public ResponseEntity<String> importUsersFromCSV(@RequestParam("file") MultipartFile file) {
-        try {
-            if (!isValidCSVFormat(file)) {
-                return ResponseEntity.badRequest().body("Geçersiz CSV formatı.");
-            }
-            csvService.saveUsersFromCSV(file);
-            return ResponseEntity.ok("Kullanıcılar başarıyla içe aktarıldı.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("İçe aktarma sırasında bir hata oluştu: " + e.getMessage());
-        }
-    }
-    private boolean isValidCSVFormat(MultipartFile file) {
-        String contentType = file.getContentType();
-        return "text/csv".equals(contentType) || "application/vnd.ms-excel".equals(contentType);
-    }
 
-    @GetMapping("/export-csv")
-    public ResponseEntity<ByteArrayResource> exportToCSV() throws Exception {
-        ByteArrayResource resource = csvService.exportUsersToCSV("User");
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=users.csv")
-                .contentType(MediaType.parseMediaType("application/csv"))
-                .body(resource);
-    }
 
 
     @PostMapping()
